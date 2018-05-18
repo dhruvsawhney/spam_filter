@@ -1,7 +1,19 @@
+import nltk.classify.util
+from nltk.classify import NaiveBayesClassifier
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
 import os
+import random
+
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 
 
 # This is how the Naive Bayes classifier expects the input
@@ -36,7 +48,7 @@ for root, dirs, files in os.walk("."):
                 data = f.read()
                 words = word_tokenize(data)
                 words = create_word_features(words)
-                print(words)
+                # print(words)
                 ham_list.append((words,"ham"))
                 count1+=1
     
@@ -49,24 +61,28 @@ for root, dirs, files in os.walk("."):
                 data = f.read()
                 words = word_tokenize(data)
                 words = create_word_features(words)
-                print(words)
+                # print(words)
                 spam_list.append((words,"spam"))
                 count2 +=1
 
-print("*"*100)
-print(ham_list[0])    
-print(spam_list[0])    
+# print("*"*100)
+# print(ham_list[0])    
+# print(spam_list[0])    
+
+combined_list = ham_list + spam_list 
+random.shuffle(combined_list)
+
+split = int(len(combined_list)*(0.7))
+
+train_set = combined_list[:split]
+test_set = combined_list[split:]
 
 
+classifier = NaiveBayesClassifier.train(train_set)
 
+accuracy = nltk.classify.util.accuracy(classifier, test_set)
 
-
-
-
-
-
-
-
+print(accuracy * 100)
 
 
 
